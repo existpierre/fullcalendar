@@ -87,13 +87,17 @@ function ResourceManager(options) {
      */
     function _fetchResourceSource(source, currentView) {
         var resources = source.resources;
-       
+
         if (resources) {
             if ($.isFunction(resources)) {
                 return resources();
             }
         } else {
-            var url = source.url;
+            if(currentView && options.urlFunction){
+                source.url = options.urlFunction("resources", currentView.visStart);
+            }
+            var url = options.urlFunction("resources");
+
             if (url) {
                 var data={};
                 if (typeof currentView == 'object') {

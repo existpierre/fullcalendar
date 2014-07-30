@@ -189,6 +189,7 @@ function View(element, calendar, viewName) {
 	function eachEventElement(event, exceptElement, funcName) {
 		// NOTE: there may be multiple events per ID (repeating events)
 		// and multiple segments per event
+        //FW: TODO elements is sometime null...
 		var elements = eventElementsByID[event._id],
 			i, len = elements.length;
 		for (i=0; i<len; i++) {
@@ -197,7 +198,7 @@ function View(element, calendar, viewName) {
 			}
 		}
 	}
-	
+
 	
 	
 	/* Event Modification Reporting

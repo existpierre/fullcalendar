@@ -105,9 +105,17 @@ html .fc,
 	zoom: 1; /* for IE7, gives accurate coordinates for [un]freezeContentHeight */
 	}
 	
-.fc-view {
+/*.fc-view {
 	width: 100%;
 	overflow: visible;
 	}
-	
-	
+	FW: for trash
+	*/
+
+.fc-milestone-th {
+    color: #1DAD3D;
+}
+
+.fc-milestone-td {
+    background-color: #E0FFE7;
+}

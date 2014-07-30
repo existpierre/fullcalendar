@@ -172,6 +172,70 @@ function ResourceView(element, calendar, viewName) {
 	}
 
 
+    // FW HOLIDAYS
+    var hObj = {};
+    fillObjHolidays();
+
+    function fillObjHolidays(){
+        if(opt('holidays') != null){
+            var holidaysStr = opt('holidays');
+            var holidays = jQuery.parseJSON(holidaysStr);
+            var len = holidays.length;
+            for(var x=0; x<len; x++){
+                if(holidays[x].year != null){
+                    hObj[holidays[x].day + "." + holidays[x].month + "." + holidays[x].year] = "";
+                }else {
+                    hObj[holidays[x].day + "." + holidays[x].month] = "";
+                }
+            }
+        }
+    }
+
+    function isHoliday(date){
+        return hObj[date.getDate() + "." + date.getMonth()] != null
+            || hObj[date.getDate() + "." + date.getMonth() + "." + date.getFullYear()] != null;
+    }
+
+    //FW: MILESTONES
+    var mObj = {};
+    fillObjMilestones();
+
+    function fillObjMilestones(){
+        if(opt('milestones') != null){
+            var milestonesStr = opt('milestones');
+            var milestones = jQuery.parseJSON(milestonesStr);
+            var len = milestones.length;
+            for(var x=0; x<len; x++){
+                if(mObj[milestones[x].date] == null){
+                    mObj[milestones[x].date] = [milestones[x]];
+                } else {
+                    mObj[milestones[x].date].push(milestones[x]);
+                }
+            }
+        }
+    }
+
+    function getMilestone(date){
+        var mDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+        var switchMonth = (date.getMonth() + 1);
+        var mMonth = switchMonth < 10 ? "0" + switchMonth : switchMonth;
+        return mObj[mDate + "." + mMonth + "." + date.getFullYear()];
+    }
+
+    function getMilestoneTooltip(milestones) {
+        var len = milestones.length;
+        var htmlStr = "";
+        for(var x=0; x<len; x++){
+            htmlStr += "<div><strong>" + milestones[x].name + "</strong><br/>";
+            htmlStr += "<label>" + milestones[x].description + "</label><br/>";
+            htmlStr += "<label>" + milestones[x].date + "</label>, ";
+            htmlStr += "<label>" + (milestones[x].done ? "Done" : "NO") + "</label><br/>";
+            htmlStr += "</div>";
+        }
+        return htmlStr;
+    }
+
+
 	function buildTable() {
 		var html = buildTableHTML();
 		var date;
@@ -243,6 +307,7 @@ function ResourceView(element, calendar, viewName) {
 
 
 	function buildHeadHTML() {
+
 		var headerClass = tm + "-widget-header";
 		var html = '';
 		var col;
@@ -262,9 +327,14 @@ function ResourceView(element, calendar, viewName) {
 			"</th>";
 		for (col=0; col<colCnt; col++) {
 			date = indexDate(col);
+            var milestone = getMilestone(date);
+            var isMilestone = milestone != null; // FW: add milestone class and title
+            var milestoneClass = isMilestone ? 'fc-milestone-th ' : '';
+            var title = isMilestone ? 'title="' + getMilestoneTooltip(milestone) + '" ' : '';
+
 			html +=
-				"<th class='" + headerClass + " fc-id " + date.getTime() +
-					(date.getDay() === 0 || date.getDay() === 6 ? 'fc-weekend' : '') +
+				"<th " + title + "class='" + milestoneClass + headerClass + " fc-id " + date.getTime() +
+					(date.getDay() === 0 || date.getDay() === 6 || isHoliday(date) ? 'fc-weekend' : '') +
 				"'>" +
 				(showWeekNumbers && (viewName === 'resourceNextWeeks' || viewName === 'resourceMonth') &&
 					date.getDay() === 1 ? "#" + formatDate(date, weekNumberFormat) + "<br>" : "") +
@@ -336,11 +406,16 @@ function ResourceView(element, calendar, viewName) {
 			classNames.push('fc-future');
 		}
 
-		if (date.getDay() == 0 || date.getDay() == 6) {
+		if (date.getDay() == 0 || date.getDay() == 6 || isHoliday(date)) {
 			classNames.push('fc-weekend-column');
 		}
 
-		html +=
+        var milestone = getMilestone(date);
+        if(milestone != null){
+            classNames.push("fc-milestone-td");
+        }
+
+        html +=
 			"<td" +
 			" class='" + classNames.join(' ') + "'" +
 			" data-date='" + formatDate(date, 'yyyy-MM-dd') + "'" +

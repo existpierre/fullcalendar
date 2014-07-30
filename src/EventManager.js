@@ -253,7 +253,7 @@ function EventManager(options, _sources) {
 				}else{
 					e.end = null;
 				}
-				e.title = event.title;
+				e.title = event.title; // FW: fix title problem
 				e.url = event.url;
 				e.allDay = event.allDay;
 				e.className = event.className;
